@@ -1,0 +1,20 @@
+Line Item,Amount
+--- OPERATING ACTIVITIES ---,
+Net Income,36100
+Depreciation & Amortization,7600
+Changes in Accounts Receivable,-4700
+Changes in Inventory,-3500
+Changes in Accounts Payable,4600
+Net Cash from Operations,40100
+--- INVESTING ACTIVITIES ---,
+Purchase of Equipment,-12000
+Sale of Investments,2700
+Net Cash from Investing,-9300
+--- FINANCING ACTIVITIES ---,
+Proceeds from Debt,12300
+Repayment of Debt,-10700
+Dividends Paid,-2200
+Net Cash from Financing,-600
+Net Change in Cash,30200
+Cash at Beginning of Period,99600
+Cash at End of Period,129800

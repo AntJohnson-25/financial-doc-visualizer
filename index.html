@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Document Visualizer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell" id="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1 class="sidebar-brand"><img src="logo/eli-logo.png" alt="Financial Doc Visualizer" class="sidebar-logo"></h1>
+      <button id="sidebar-collapse" class="icon-btn" type="button" aria-label="Collapse sidebar" aria-expanded="true" aria-controls="sidebar">&laquo;</button>
+    </div>
+
+    <section class="sidebar-section">
+      <h2>Document type</h2>
+      <p class="sidebar-hint">Filters the dashboard to the statement type you care about.</p>
+      <div class="pill-list" id="doc-type-pills" role="group" aria-label="Filter by document type">
+        <button class="pill active" type="button" data-type="all">All</button>
+        <button class="pill" type="button" data-type="Assets,Liabilities,Equity">Balance Sheet</button>
+        <button class="pill" type="button" data-type="Revenue,Expenses,Net Result">Profit &amp; Loss</button>
+        <button class="pill" type="button" data-type="Cash Flow">Cash Flow</button>
+      </div>
+    </section>
+
+    <section class="sidebar-section">
+      <h2>Loaded documents</h2>
+      <div id="doc-chips" class="doc-chips" hidden></div>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <details class="sidebar-section settings-section">
+      <summary>AI extraction (optional)</summary>
+      <p class="sidebar-hint">Off by default. Rule-based parsing handles clean CSV/Excel exports and typical PDF statements on its own. Turn this on only for messier documents it can't read cleanly.</p>
+      <label class="settings-row">
+        <input type="checkbox" id="ai-enabled">
+        Use AI extraction with your own API key
+      </label>
+      <div id="ai-config" class="settings-row-group" hidden>
+        <label class="settings-row">
+          Provider
+          <select id="ai-provider">
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="openai">OpenAI</option>
+          </select>
+        </label>
+        <label class="settings-row">
+          <span id="ai-key-label">Anthropic API key</span>
+          <input type="password" id="ai-key" autocomplete="off" placeholder="sk-...">
+        </label>
+        <p class="sidebar-hint">Stored only in this browser's local storage, per provider. Sent directly from your browser to the provider's API &mdash; never to us, never anywhere else.</p>
+      </div>
+    </details>
+
+    <p class="sidebar-footnote">Nothing you drop here leaves your browser unless you explicitly enable AI extraction with your own key.</p>
+  </aside>
+
+  <main class="content" id="content">
+
+    <div class="content-logo-bar">
+      <img src="logo.png" alt="Financial Doc Visualizer" class="content-logo">
+    </div>
+
+    <section id="results" class="results" hidden>
+      <div class="dashboard-toolbar">
+        <button id="reset-layout-btn" class="btn-secondary" type="button">Tidy</button>
+      </div>
+      <div id="dashboard" class="dashboard"></div>
+
+      <div id="note-editor" class="note-editor" hidden>
+        <label id="note-editor-label" for="note-editor-input">Note</label>
+        <textarea id="note-editor-input" rows="2"></textarea>
+        <div class="note-editor-actions">
+          <button id="note-editor-save" class="btn-secondary" type="button">Save</button>
+          <button id="note-editor-clear" class="btn-secondary" type="button">Clear</button>
+          <button id="note-editor-cancel" class="btn-secondary" type="button">Cancel</button>
+        </div>
+      </div>
+
+      <button id="reopen-upload-btn" class="fab" type="button" aria-label="Add more documents" title="Add more documents">+</button>
+    </section>
+
+    <div class="composer-wrap" id="composer-wrap">
+      <div id="drop-zone" class="drop-bar" tabindex="0" role="button" aria-label="Drop financial documents here or click to choose files">
+        <svg class="drop-bar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <span class="drop-bar-text">Drop CSV, Excel, or PDF files here, or click to choose</span>
+        <input type="file" id="file-input" accept=".csv,.xlsx,.xls,.pdf" multiple hidden>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.10.27/interact.min.js"></script>
+
+<script src="parsers/csv-excel.js"></script>
+<script src="parsers/pdf-parser.js"></script>
+<script src="normalize.js"></script>
+<script src="derive-cashflow.js"></script>
+<script src="financial-metrics.js"></script>
+<script src="outliers.js"></script>
+<script src="annotations.js"></script>
+<script src="ai-extract.js"></script>
+<script src="waterfall.js"></script>
+<script src="widgets.js"></script>
+<script src="charts.js"></script>
+<script src="settings.js"></script>
+<script src="sidebar.js"></script>
+<script src="file-input.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+Line Item,Amount
+--- ASSETS ---,
+Cash & Equivalents,109000
+Accounts Receivable,66200
+Inventory,52500
+Total Current Assets,227700
+"Property, Plant & Equipment",393600
+Accumulated Depreciation,-22800
+Intangible Assets,58300
+Total Non-Current Assets,429100
+TOTAL ASSETS,656800
+--- LIABILITIES ---,
+Accounts Payable,57100
+Short-Term Debt,23600
+Total Current Liabilities,80700
+Long-Term Debt,129300
+Total Liabilities,210000
+--- EQUITY ---,
+Common Stock,130700
+Retained Earnings,316100
+Total Equity,446800
+TOTAL LIABILITIES & EQUITY,656800
