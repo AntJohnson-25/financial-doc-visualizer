@@ -315,12 +315,14 @@ body {
 }
 
 .composer-wrap:not(.mode-chat) #chat-mode-hint,
+.composer-wrap:not(.mode-chat) #chat-suggestions,
 .composer-wrap:not(.mode-chat) #chat-log,
 .composer-wrap:not(.mode-chat) #chat-form {
   display: none;
 }
 
 .composer-wrap.mode-chat #chat-mode-hint,
+.composer-wrap.mode-chat #chat-suggestions,
 .composer-wrap.mode-chat #chat-log,
 .composer-wrap.mode-chat #chat-form {
   width: 100%;
@@ -330,6 +332,29 @@ body {
 .composer-wrap #chat-mode-hint {
   margin: 0;
   text-align: center;
+}
+
+.chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.chat-suggestion-chip {
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-muted);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.chat-suggestion-chip:hover {
+  border-color: var(--primary-light);
+  color: var(--primary-light);
 }
 
 /* Dims the dashboard behind the chat bar so the widget grid isn't

@@ -5,6 +5,24 @@
 // question doesn't match anything it knows how to answer, rather than
 // guessing.
 (function () {
+  // A curated set of questions phrased to hit every branch of the keyword
+  // matcher below, so they're guaranteed accurate for no-key users — and
+  // since they're just plain, well-formed questions, they work equally
+  // well typed to the AI chat path. Shared with insights.js, which renders
+  // them as clickable suggestion chips above the chat input.
+  window.SUGGESTED_QUESTIONS = [
+    "What is my total revenue?",
+    "What is my net income?",
+    "What is my gross profit margin?",
+    "What is my operating income?",
+    "What are my operating expenses?",
+    "How much cash do I have?",
+    "What is my current ratio?",
+    "What is my debt-to-equity ratio?",
+    "How is my revenue trending over time?",
+    "How is my gross margin trending over time?",
+  ];
+
   const KPI_KEYWORDS = [
     { keywords: ["net income", "profit", "bottom line"], label: "Net Income" },
     { keywords: ["revenue", "sales", "top line"], label: "Revenue" },
@@ -22,13 +40,11 @@
     const data = fm.computeReportData(byCategory);
     const q = question.toLowerCase();
 
-    for (const entry of KPI_KEYWORDS) {
-      if (entry.keywords.some((k) => q.includes(k))) {
-        const kpi = data.kpis.find((k) => k.label === entry.label);
-        if (kpi) return describeKpi(kpi);
-      }
-    }
-
+    // Trend/ratio phrasing is checked before the generic KPI-value loop
+    // below on purpose: a question like "how is my revenue trending over
+    // time?" contains the word "revenue", which would otherwise match the
+    // KPI loop's plain-value branch first and answer with just the latest
+    // figure instead of the trend across periods.
     if (q.includes("current ratio") || q.includes("liquidity")) {
       return describeRatio(data.ratios, "Current Ratio");
     }
@@ -40,6 +56,13 @@
     }
     if (q.includes("trend") || q.includes("over time") || q.includes("growing") || q.includes("declining")) {
       return describeRevenueTrend(data.periodMetrics);
+    }
+
+    for (const entry of KPI_KEYWORDS) {
+      if (entry.keywords.some((k) => q.includes(k))) {
+        const kpi = data.kpis.find((k) => k.label === entry.label);
+        if (kpi) return describeKpi(kpi);
+      }
     }
 
     return (

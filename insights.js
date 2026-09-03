@@ -8,9 +8,21 @@
   const dashboardEl = document.getElementById("dashboard");
 
   const chatModeHint = document.getElementById("chat-mode-hint");
+  const chatSuggestions = document.getElementById("chat-suggestions");
   const chatLog = document.getElementById("chat-log");
   const chatForm = document.getElementById("chat-form");
   const chatInput = document.getElementById("chat-input");
+
+  // Same suggested-question list works for the no-key fallback matcher and
+  // full AI chat — clicking one just submits it like the user typed it.
+  (window.SUGGESTED_QUESTIONS || []).forEach((question) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chat-suggestion-chip";
+    chip.textContent = question;
+    chip.addEventListener("click", () => submitQuestion(question));
+    chatSuggestions.appendChild(chip);
+  });
 
   // The report renders as a widget on the canvas (same drag/resize/print
   // chrome as the chart widgets) rather than an inline sidebar panel, so
@@ -164,16 +176,20 @@
     win.print();
   }
 
-  chatForm.addEventListener("submit", async (e) => {
+  chatForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const question = chatInput.value.trim();
     if (!question) return;
+    chatInput.value = "";
+    submitQuestion(question);
+  });
+
+  async function submitQuestion(question) {
     const byCategory = window.getCurrentByCategory();
     if (!byCategory) return;
 
     const historyBefore = chatHistory.slice();
     appendChatMessage("user", question);
-    chatInput.value = "";
     chatInput.disabled = true;
 
     const ai = window.getAiSettings();
@@ -196,7 +212,7 @@
       chatInput.disabled = false;
       chatInput.focus();
     }
-  });
+  }
 
   function appendChatMessage(role, text) {
     chatHistory.push({ role, text });
