@@ -3,18 +3,56 @@ const resultsEl = document.getElementById("results");
 const docChipsEl = document.getElementById("doc-chips");
 const contentEl = document.getElementById("content");
 const composerWrapEl = document.getElementById("composer-wrap");
+const composerBackdropEl = document.getElementById("composer-backdrop");
 const reopenUploadBtn = document.getElementById("reopen-upload-btn");
+const addMoreDocsBtn = document.getElementById("add-more-docs-btn");
 
-reopenUploadBtn.addEventListener("click", () => {
-  composerWrapEl.classList.toggle("force-visible");
-});
+// The backdrop only dims for chat mode — asking a question is a focused
+// task competing with a busy widget grid behind it; reopening the upload
+// bar isn't, so it stays out of the way there.
+function syncComposerBackdrop() {
+  const visible = composerWrapEl.classList.contains("force-visible") && composerWrapEl.classList.contains("mode-chat");
+  composerBackdropEl.classList.toggle("visible", visible);
+}
+
+function closeComposer() {
+  composerWrapEl.classList.remove("force-visible");
+  syncComposerBackdrop();
+}
+
+// Once documents are loaded, the "+" FAB stops being a second way to open
+// the upload bar — that moved to the small + next to "Loaded documents" —
+// and instead opens the "ask about your data" bar. Same composer-wrap
+// element either way, just switched between its drop-zone and chat-bar
+// contents via the mode-chat class (see style.css).
+function toggleComposer(mode) {
+  const alreadyOpenInMode =
+    composerWrapEl.classList.contains("force-visible") && composerWrapEl.classList.contains("mode-chat") === (mode === "chat");
+  if (alreadyOpenInMode) {
+    closeComposer();
+    return;
+  }
+  composerWrapEl.classList.toggle("mode-chat", mode === "chat");
+  composerWrapEl.classList.add("force-visible");
+  syncComposerBackdrop();
+  if (mode === "chat") {
+    const input = document.getElementById("chat-input");
+    if (input) input.focus();
+  }
+}
+
+reopenUploadBtn.addEventListener("click", () => toggleComposer("chat"));
+addMoreDocsBtn.addEventListener("click", () => toggleComposer("upload"));
+composerBackdropEl.addEventListener("click", closeComposer);
+
 document.addEventListener("click", (e) => {
   if (
     composerWrapEl.classList.contains("force-visible") &&
     !composerWrapEl.contains(e.target) &&
-    e.target !== reopenUploadBtn
+    e.target !== reopenUploadBtn &&
+    e.target !== addMoreDocsBtn
   ) {
-    composerWrapEl.classList.remove("force-visible");
+    closeComposer();
   }
 });
 
@@ -81,6 +119,11 @@ function rerenderDashboard() {
   if (loadedDocs.length === 0) {
     resultsEl.hidden = true;
     contentEl.classList.remove("has-results");
+    addMoreDocsBtn.hidden = true;
+    composerWrapEl.classList.remove("force-visible", "mode-chat");
+    syncComposerBackdrop();
+    if (window.clearCurrentByCategory) window.clearCurrentByCategory();
+    if (window.refreshInsightsAvailability) window.refreshInsightsAvailability();
     return;
   }
 
@@ -97,6 +140,8 @@ function rerenderDashboard() {
   window.renderDashboard(combinedRecords, docKey);
   resultsEl.hidden = false;
   contentEl.classList.add("has-results");
+  addMoreDocsBtn.hidden = false;
+  if (window.refreshInsightsAvailability) window.refreshInsightsAvailability();
 }
 
 function renderDocChips() {

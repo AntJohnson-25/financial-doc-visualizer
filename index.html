@@ -28,14 +28,17 @@
     </section>
 
     <section class="sidebar-section">
-      <h2>Loaded documents</h2>
+      <div class="sidebar-section-header">
+        <h2>Loaded documents</h2>
+        <button id="add-more-docs-btn" class="icon-btn" type="button" aria-label="Add more documents" title="Add more documents" hidden>+</button>
+      </div>
       <div id="doc-chips" class="doc-chips" hidden></div>
       <p id="status" class="status" role="status" aria-live="polite"></p>
     </section>
 
     <details class="sidebar-section settings-section">
       <summary>AI extraction (optional)</summary>
-      <p class="sidebar-hint">Off by default. Rule-based parsing handles clean CSV/Excel exports and typical PDF statements on its own. Turn this on only for messier documents it can't read cleanly.</p>
+      <p class="sidebar-hint">Add your API key here for messy document processing, and for a polished AI-written report. Off by default — rule-based parsing handles clean CSV/Excel exports and typical PDF statements on its own.</p>
       <label class="settings-row">
         <input type="checkbox" id="ai-enabled">
         Use AI extraction with your own API key
@@ -53,6 +56,20 @@
           <input type="password" id="ai-key" autocomplete="off" placeholder="sk-...">
         </label>
         <p class="sidebar-hint">Stored only in this browser's local storage, per provider. Sent directly from your browser to the provider's API &mdash; never to us, never anywhere else.</p>
+      </div>
+    </details>
+
+    <details class="sidebar-section settings-section" id="insights-section" open>
+      <summary>Insights</summary>
+      <p class="sidebar-hint" id="insights-empty-hint">Load a document to generate a report.</p>
+
+      <div id="insights-body" hidden>
+        <button id="report-generate-btn" class="btn-secondary" type="button">Generate report</button>
+        <label class="settings-row" id="report-enhance-row" hidden>
+          <input type="checkbox" id="report-enhance-ai">
+          Enhance narrative with AI
+        </label>
+        <p class="sidebar-hint" id="report-hint">Opens as a widget on the dashboard — drag, resize, or print it from there. Use the + button below the dashboard to ask questions about your data.</p>
       </div>
     </details>
 
@@ -81,8 +98,10 @@
         </div>
       </div>
 
-      <button id="reopen-upload-btn" class="fab" type="button" aria-label="Add more documents" title="Add more documents">+</button>
+      <button id="reopen-upload-btn" class="fab" type="button" aria-label="Ask about your data" title="Ask about your data">+</button>
     </section>
+
+    <div class="composer-backdrop" id="composer-backdrop"></div>
 
     <div class="composer-wrap" id="composer-wrap">
       <div id="drop-zone" class="drop-bar" tabindex="0" role="button" aria-label="Drop financial documents here or click to choose files">
@@ -94,6 +113,13 @@
         <span class="drop-bar-text">Drop CSV, Excel, or PDF files here, or click to choose</span>
         <input type="file" id="file-input" accept=".csv,.xlsx,.xls,.pdf" multiple hidden>
       </div>
+
+      <p class="sidebar-hint" id="chat-mode-hint"></p>
+      <div id="chat-log" class="chat-log" role="log" aria-live="polite"></div>
+      <form id="chat-form" class="chat-form">
+        <input type="text" id="chat-input" placeholder="e.g. What's my net income?" autocomplete="off">
+        <button type="submit" class="btn-secondary">Ask</button>
+      </form>
     </div>
 
   </main>
@@ -115,11 +141,15 @@
 <script src="outliers.js"></script>
 <script src="annotations.js"></script>
 <script src="ai-extract.js"></script>
+<script src="report.js"></script>
+<script src="chat-fallback.js"></script>
+<script src="chat-ai.js"></script>
 <script src="waterfall.js"></script>
 <script src="widgets.js"></script>
 <script src="charts.js"></script>
 <script src="settings.js"></script>
 <script src="sidebar.js"></script>
+<script src="insights.js"></script>
 <script src="file-input.js"></script>
 <script src="app.js"></script>
 

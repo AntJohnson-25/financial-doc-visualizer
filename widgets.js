@@ -50,6 +50,26 @@
     return (all[docKey] && all[docKey][id]) || null;
   }
 
+  // Removes a single widget created on demand outside the normal
+  // renderDashboard() rebuild (e.g. insights.js's report widget) — every
+  // other widget is torn down wholesale by resetWidgetCanvas instead, so
+  // nothing else needs a one-off removal path.
+  window.removeWidget = function removeWidget(widget) {
+    if (!widget) return;
+    const idx = widgets.indexOf(widget);
+    if (idx !== -1) widgets.splice(idx, 1);
+    if (selectedWidget === widget) selectedWidget = null;
+    if (window.interact) {
+      try {
+        interact(widget.el).unset();
+      } catch (e) {
+        // already unset / never had interact bound — nothing to clean up.
+      }
+    }
+    widget.el.remove();
+    updateCanvasHeight();
+  };
+
   window.clearWidgetLayout = function clearWidgetLayout(docKey) {
     try {
       const all = loadAllLayouts();

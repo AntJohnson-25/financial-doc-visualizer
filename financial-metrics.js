@@ -194,6 +194,29 @@
     return ratios;
   }
 
+  // Single bundle of everything report.js/chat.js/chat-fallback.js need,
+  // so they all read the same numbers charts.js's cards already show
+  // instead of each re-deriving byCategory independently.
+  function computeReportData(byCategory) {
+    return {
+      kpis: computeExecutiveKpis(byCategory),
+      periodMetrics: computePeriodMetrics(byCategory),
+      ratios: computeBalanceSheetRatios(byCategory),
+    };
+  }
+
+  // Same formatting rule charts.js's formatKpiValue uses for KPI tiles —
+  // duplicated here (rather than exported from charts.js) since this file
+  // is the DOM-free layer and report/chat consumers shouldn't have to pull
+  // in charts.js just for a number formatter.
+  const numberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
+  function formatMetricValue(value, format) {
+    if (value === null || value === undefined || Number.isNaN(value)) return "—";
+    if (format === "percent") return value.toFixed(1) + "%";
+    if (format === "ratio") return value.toFixed(2);
+    return numberFormat.format(value);
+  }
+
   window.financialMetrics = {
     getCategoryTotal,
     splitExpenses,
@@ -201,5 +224,7 @@
     computePeriodMetrics,
     computeExecutiveKpis,
     computeBalanceSheetRatios,
+    computeReportData,
+    formatMetricValue,
   };
 })();

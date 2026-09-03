@@ -20,6 +20,17 @@
   let currentDocKey = "";
   let editingPointKey = null;
   let lastRenderArgs = null;
+  let currentByCategory = null;
+
+  window.getCurrentByCategory = function getCurrentByCategory() {
+    return currentByCategory;
+  };
+  window.clearCurrentByCategory = function clearCurrentByCategory() {
+    currentByCategory = null;
+  };
+  window.getCurrentDocKey = function getCurrentDocKey() {
+    return currentDocKey;
+  };
 
   noteEditorSave.addEventListener("click", () => {
     if (editingPointKey === null) return;
@@ -55,6 +66,7 @@
     window.resetWidgetCanvas(dashboard);
 
     const byCategory = groupByCategory(records);
+    currentByCategory = byCategory;
     let orderedCategories = CATEGORY_ORDER.filter((c) => byCategory[c]).concat(
       Object.keys(byCategory).filter((c) => !CATEGORY_ORDER.includes(c))
     );

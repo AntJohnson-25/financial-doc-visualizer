@@ -5,21 +5,26 @@
 
   const COLLAPSED_STORAGE_KEY = "fdv.sidebarCollapsed";
 
-  collapseBtn.addEventListener("click", () => {
-    const collapsed = appShell.classList.toggle("sidebar-collapsed");
+  // Collapsed means the sidebar takes zero width — everything in it is
+  // hidden except this one button, which style.css pops out to fixed
+  // position at the edge (see .app-shell.sidebar-collapsed #sidebar-collapse)
+  // so there's still something to click to bring it back.
+  function setCollapsed(collapsed) {
+    appShell.classList.toggle("sidebar-collapsed", collapsed);
+    collapseBtn.textContent = collapsed ? "»" : "«";
     collapseBtn.setAttribute("aria-expanded", String(!collapsed));
     collapseBtn.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
     try {
       localStorage.setItem(COLLAPSED_STORAGE_KEY, collapsed ? "1" : "");
     } catch (e) {}
+  }
+
+  collapseBtn.addEventListener("click", () => {
+    setCollapsed(!appShell.classList.contains("sidebar-collapsed"));
   });
 
   try {
-    if (localStorage.getItem(COLLAPSED_STORAGE_KEY) === "1") {
-      appShell.classList.add("sidebar-collapsed");
-      collapseBtn.setAttribute("aria-expanded", "false");
-      collapseBtn.setAttribute("aria-label", "Expand sidebar");
-    }
+    if (localStorage.getItem(COLLAPSED_STORAGE_KEY) === "1") setCollapsed(true);
   } catch (e) {}
 
   let activeFilter = "all";

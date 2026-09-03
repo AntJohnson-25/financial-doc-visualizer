@@ -59,18 +59,30 @@ body {
   gap: 1.5rem;
 }
 
+/* Collapsed = fully closed, not a slim icon rail — the point is to give
+   the dashboard back that width entirely. The collapse button itself pops
+   out to a fixed-position tab at the edge (below) so it's still reachable
+   at 0 width, rather than adding a second control for the same job. */
 .app-shell.sidebar-collapsed .sidebar {
-  width: 56px;
-  min-width: 56px;
+  width: 0;
+  min-width: 0;
   resize: none;
-  padding: 1.25rem 0.6rem;
+  padding: 0;
+  border-right: none;
   overflow: hidden;
 }
 
-.app-shell.sidebar-collapsed .sidebar-section,
-.app-shell.sidebar-collapsed .sidebar-footnote,
-.app-shell.sidebar-collapsed .sidebar-header h1 {
-  display: none;
+.app-shell.sidebar-collapsed #sidebar-collapse {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 64px;
+  border-radius: 0 10px 10px 0;
+  border-left: none;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.35);
+  z-index: 600;
 }
 
 .sidebar-header {
@@ -112,16 +124,23 @@ body {
   border-color: var(--primary-light);
 }
 
-.app-shell.sidebar-collapsed .icon-btn {
-  transform: scaleX(-1);
-}
-
 .sidebar-section h2 {
   margin: 0 0 0.35rem;
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
+}
+
+.sidebar-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sidebar-section-header h2 {
+  margin: 0;
 }
 
 .sidebar-hint {
@@ -278,7 +297,66 @@ body {
 }
 
 .app-shell.sidebar-collapsed .content.has-results .composer-wrap.force-visible {
-  left: 56px;
+  left: 0;
+}
+
+/* The composer-wrap is dual-purpose: its default content is the file
+   drop-zone, but once documents are loaded the "+" FAB switches it into
+   a chat bar instead (mode-chat) — same floating bottom bar, different
+   contents, toggled from app.js's toggleComposer(). */
+.composer-wrap.mode-chat {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.composer-wrap.mode-chat #drop-zone {
+  display: none;
+}
+
+.composer-wrap:not(.mode-chat) #chat-mode-hint,
+.composer-wrap:not(.mode-chat) #chat-log,
+.composer-wrap:not(.mode-chat) #chat-form {
+  display: none;
+}
+
+.composer-wrap.mode-chat #chat-mode-hint,
+.composer-wrap.mode-chat #chat-log,
+.composer-wrap.mode-chat #chat-form {
+  width: 100%;
+  max-width: 640px;
+}
+
+.composer-wrap #chat-mode-hint {
+  margin: 0;
+  text-align: center;
+}
+
+/* Dims the dashboard behind the chat bar so the widget grid isn't
+   competing for attention while you're asking a question — sits between
+   the dashboard (z-index up to 300) and the composer bar itself (500).
+   Not shown for upload mode since the drop-zone isn't a focused task the
+   same way a conversation is. */
+.composer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 280px;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 450;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.composer-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.app-shell.sidebar-collapsed .composer-backdrop {
+  left: 0;
 }
 
 .fab {
@@ -956,5 +1034,107 @@ body {
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.4rem;
+}
+
+/* Report widget — same .widget/.widget-body chrome as the chart widgets
+   (charts.js/widgets.js), just with prose content instead of a canvas. */
+
+.report-widget-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.85rem 1rem;
+}
+
+.report-widget-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.report-widget-scroll h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+}
+
+.report-widget-scroll h3,
+.report-ai-narrative h4 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin: 0.9rem 0 0.35rem;
+}
+
+.report-widget-scroll p,
+.report-widget-scroll li {
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.report-widget-scroll ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.report-widget-scroll li.flag {
+  color: var(--danger);
+}
+
+
+.report-widget-print {
+  flex: 0 0 auto;
+  margin-top: 0.7rem;
+}
+
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 260px;
+  overflow-y: auto;
+  margin-bottom: 0.6rem;
+}
+
+.chat-log:empty {
+  display: none;
+}
+
+.chat-msg {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  max-width: 92%;
+}
+
+.chat-msg-user {
+  align-self: flex-end;
+  background: var(--primary-light);
+  color: #0d1117;
+}
+
+.chat-msg-assistant {
+  align-self: flex-start;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.chat-form input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
 }
 
