@@ -4,6 +4,7 @@
   const providerSelect = document.getElementById("ai-provider");
   const keyInput = document.getElementById("ai-key");
   const keyLabel = document.getElementById("ai-key-label");
+  const forgetBtn = document.getElementById("ai-key-forget");
 
   const PROVIDER_LABELS = {
     anthropic: "Anthropic API key",
@@ -16,6 +17,7 @@
   function loadKeyForProvider() {
     keyInput.value = window.getStoredAiKey(providerSelect.value);
     keyLabel.textContent = PROVIDER_LABELS[providerSelect.value];
+    forgetBtn.hidden = !keyInput.value;
   }
 
   aiEnabled.addEventListener("change", () => {
@@ -34,6 +36,18 @@
 
   keyInput.addEventListener("change", () => {
     window.setStoredAiKey(providerSelect.value, keyInput.value.trim());
+    forgetBtn.hidden = !keyInput.value;
+  });
+
+  // Clears this browser's saved key for the selected provider — e.g. after
+  // testing on a machine you don't want the key left on. Dispatches the
+  // same "change" event the input itself fires so insights.js's chat-mode
+  // hint (and anything else listening for it) updates immediately.
+  forgetBtn.addEventListener("click", () => {
+    keyInput.value = "";
+    window.setStoredAiKey(providerSelect.value, "");
+    forgetBtn.hidden = true;
+    keyInput.dispatchEvent(new Event("change", { bubbles: true }));
   });
 
   // Restore prior state on load.
