@@ -56,17 +56,30 @@
     const report = window.buildTemplatedReport(byCategory);
     const context =
       "You are answering questions about a user's financial data. Use ONLY the metrics below — do not " +
-      "invent figures. If the answer isn't in the data, say so plainly.\n\nMetrics:\n" + report.text;
+      "invent figures. If the answer isn't in the data, say so plainly. Respond in plain text only — " +
+      "no markdown, no asterisks, no bold, no headers, no bullet symbols.\n\nMetrics:\n" + report.text;
 
     const messages = [
       { role: "user", content: context },
-      { role: "assistant", content: "Understood — I'll answer using only those figures." },
+      { role: "assistant", content: "Understood — I'll answer using only those figures, in plain text." },
     ];
     history.forEach((m) => messages.push({ role: m.role === "assistant" ? "assistant" : "user", content: m.text }));
     messages.push({ role: "user", content: question });
 
-    return callAiText(messages, provider, apiKey);
+    const raw = await callAiText(messages, provider, apiKey);
+    return stripMarkdown(raw);
   };
+
+  // Defensive: strips markdown emphasis/heading/bullet syntax that slips
+  // through despite the prompt's plain-text instruction, so chat answers
+  // don't read as visibly AI-generated.
+  function stripMarkdown(text) {
+    return (text || "")
+      .replace(/\*\*?/g, "")
+      .replace(/^#{1,6}\s+/gm, "")
+      .replace(/^[-•]\s+/gm, "")
+      .trim();
+  }
 
   async function callAiText(messages, provider, apiKey) {
     if (provider === "anthropic") return chatAnthropic(messages, apiKey);

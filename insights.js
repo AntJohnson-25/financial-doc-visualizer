@@ -132,10 +132,10 @@
     const printBtn = document.createElement("button");
     printBtn.type = "button";
     printBtn.className = "btn-secondary report-widget-print";
-    printBtn.textContent = "Print / Save as PDF";
+    printBtn.textContent = "Download report (.md)";
     printBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      openPrintWindow(report.title, scroll.innerHTML);
+      downloadReportMarkdown(report);
     });
 
     const bodyWrap = document.createElement("div");
@@ -157,23 +157,58 @@
     reportWidget.el.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  function openPrintWindow(title, html) {
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(
-      "<!DOCTYPE html><html><head><title>" +
-        escapeHtml(title) +
-        "</title><style>" +
-        "body{font-family:Arial,Helvetica,sans-serif;max-width:720px;margin:2rem auto;color:#1a202c;line-height:1.5;}" +
-        "h2{font-size:1.3rem;} h3{font-size:1rem;margin-top:1.5rem;} h4{margin:0 0 0.3rem;}" +
-        "ul{padding-left:1.2rem;} li.flag{color:#c0392b;}" +
-        "</style></head><body>" +
-        html +
-        "</body></html>"
-    );
-    win.document.close();
-    win.focus();
-    win.print();
+  // One-click plain-text export: builds markdown from the same data the
+  // widget renders (report.text for the templated report, report.narrative
+  // for the AI version) and saves it via a throwaway <a download> link —
+  // no dialog, no external library, no print step.
+  function downloadReportMarkdown(report) {
+    const md = buildReportMarkdown(report);
+    const blob = new Blob([md], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = safeFilename(report.title) + ".md";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function buildReportMarkdown(report) {
+    const lines = ["# " + report.title, ""];
+
+    if (report.narrative) {
+      report.narrative.paragraphs.forEach((p) => lines.push(p, ""));
+      if (report.narrative.actionSteps.length) {
+        lines.push("## Action steps", "");
+        report.narrative.actionSteps.forEach((s) => lines.push("- " + s));
+        lines.push("");
+      }
+    } else {
+      if (report.narrativeError) {
+        lines.push("_AI enhancement failed: " + report.narrativeError + " — showing the standard report instead._", "");
+      }
+      lines.push(templatedTextToMarkdown(report.text));
+    }
+
+    return lines.join("\n").trim() + "\n";
+  }
+
+  // report.text uses ALL-CAPS lines as section headings (see report.js) —
+  // turn those into "## Title Case" markdown headings, pass everything else through.
+  function templatedTextToMarkdown(text) {
+    return (text || "")
+      .split("\n")
+      .map((line) => (/^[A-Z][A-Z \-]+$/.test(line) ? "## " + toTitleCase(line) : line))
+      .join("\n");
+  }
+
+  function toTitleCase(s) {
+    return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  function safeFilename(title) {
+    return (title || "report").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-") || "report";
   }
 
   chatForm.addEventListener("submit", (e) => {
@@ -221,12 +256,6 @@
     el.textContent = text;
     chatLog.appendChild(el);
     chatLog.scrollTop = chatLog.scrollHeight;
-  }
-
-  function escapeHtml(s) {
-    const div = document.createElement("div");
-    div.textContent = s;
-    return div.innerHTML;
   }
 
   document.getElementById("ai-enabled").addEventListener("change", () => {
